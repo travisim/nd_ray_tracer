@@ -1,0 +1,1 @@
+/usr/bin/c++  -arch x86_64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/nd_ray_tracer.dir/main.cpp.o CMakeFiles/nd_ray_tracer.dir/nd_ray_tracer.cpp.o CMakeFiles/nd_ray_tracer.dir/plotting.cpp.o -o nd_ray_tracer
