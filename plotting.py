@@ -73,6 +73,8 @@ def plot_2d_trace_with_proper_front_cells(x_0, x_f, path, all_front_cells, inter
     # Plot start and goal
     plt.plot(x_0[0], x_0[1], 'go', label="Start", markersize=10, zorder=6)
     plt.plot(x_f[0], x_f[1], 'ro', label="Goal", markersize=10, zorder=6)
+    plt.text(x_0[0], x_0[1] + 0.2, f'Start ({x_0[0]:.2f}, {x_0[1]:.2f})', ha='center', va='bottom', fontsize=9)
+    plt.text(x_f[0], x_f[1] + 0.2, f'Goal ({x_f[0]:.2f}, {x_f[1]:.2f})', ha='center', va='bottom', fontsize=9)
     
     # Plot obstacles
     if obstacles:
@@ -131,15 +133,23 @@ def plot_2d_trace_with_proper_front_cells(x_0, x_f, path, all_front_cells, inter
     plt.gca().set_aspect('equal', adjustable='box')
     plt.tight_layout()
 
-    info_text = f"new_front_cells: {np.array(new_front_cells) if new_front_cells is not None else 'N/A'}\n"
-    info_text += f"new_coords: {np.array(new_coords) if new_coords is not None else 'N/A'}\n"
-    info_text += f"l (length): {round(l, 4) if l is not None else 'N/A'}\n"
-    info_text += f"isGoalReached: {isGoalReached if isGoalReached is not None else 'N/A'}"
-    plt.gcf().text(0.02, 0.98, info_text, fontsize=13, va='top', ha='left', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
+    info_text_lines = []
+    if new_front_cells is not None:
+        info_text_lines.append(f"new_front_cells: {np.array(new_front_cells)}")
+    if new_coords is not None:
+        info_text_lines.append(f"new_coords: {np.array(new_coords)}")
+    if l is not None:
+        info_text_lines.append(f"l (length): {round(l, 4)}")
+    if isGoalReached is not None:
+        info_text_lines.append(f"isGoalReached: {isGoalReached}")
+    
+    if info_text_lines:
+        info_text = "\n".join(info_text_lines)
+        plt.gcf().text(0.02, 0.98, info_text, fontsize=13, va='top', ha='left', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 
     plt.show()
 
-def plot_3d_trace_with_proper_front_cells(x_0, x_f, path, all_front_cells, intersection_coords, y_coords_history, obstacles, title="3D Ray Trace - Proper Front Cells"):
+def plot_3d_trace_with_proper_front_cells(x_0, x_f, path, all_front_cells, intersection_coords, y_coords_history, obstacles, isGoalReached=None, title="3D Ray Trace - Proper Front Cells"):
     """
     3D Visualization showing the corrected front cells - cells that the ray will enter next.
     Also plots the history of y corner coordinates as 3D points.
@@ -167,6 +177,8 @@ def plot_3d_trace_with_proper_front_cells(x_0, x_f, path, all_front_cells, inter
     
     ax.scatter(x_0[0], x_0[1], x_0[2], c='green', s=300, label="Start", marker='o')
     ax.scatter(x_f[0], x_f[1], x_f[2], c='red', s=300, label="Goal", marker='o')
+    ax.text(x_0[0], x_0[1], x_0[2] + 0.2, f'Start ({x_0[0]:.2f}, {x_0[1]:.2f}, {x_0[2]:.2f})', ha='center', va='bottom', fontsize=9, color='black')
+    ax.text(x_f[0], x_f[1], x_f[2] + 0.2, f'Goal ({x_f[0]:.2f}, {x_f[1]:.2f}, {x_f[2]:.2f})', ha='center', va='bottom', fontsize=9, color='black')
     
     obstacle_edges_to_plot = []
     if obstacles:
@@ -258,3 +270,11 @@ def plot_3d_trace_with_proper_front_cells(x_0, x_f, path, all_front_cells, inter
 
     plt.tight_layout()
     plt.show()
+
+    info_text_lines = []
+    if isGoalReached is not None:
+        info_text_lines.append(f"isGoalReached: {isGoalReached}")
+
+    if info_text_lines:
+        info_text = "\n".join(info_text_lines)
+        fig.text(0.02, 0.98, info_text, fontsize=13, va='top', ha='left', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))

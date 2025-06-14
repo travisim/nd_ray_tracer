@@ -27,4 +27,16 @@ void plot_3d_trace(
     const std::vector<Eigen::VectorXi>& obstacles
 );
 
+void plot_2d_projection(
+    const std::string& title,
+    const Eigen::VectorXd& x_0,
+    const Eigen::VectorXd& x_f,
+    const std::vector<Eigen::VectorXd>& path,
+    const std::vector<std::vector<Eigen::VectorXi>>& all_front_cells,
+    const std::vector<Eigen::VectorXd>& intersection_coords,
+    const std::vector<Eigen::VectorXi>& y_coords_history,
+    const std::vector<Eigen::VectorXi>& obstacles,
+    int dim1, int dim2
+);
+
 #endif // PLOTTING_H

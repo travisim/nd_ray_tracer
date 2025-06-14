@@ -63,7 +63,7 @@ class NDRayTracer:
         
         # Step 6: Calculate D_i^(0) based on PDF formula
         self.norm_delta_x = np.linalg.norm(self.delta_x)  # ||Δx||
-          # Step 7: y^(0) = [x_0 | -Δx] (conditional floor/ceiling)
+        # Step 7: y^(0) = [x_0 | -Δx] (conditional floor/ceiling)
         self.y = self._floor_ceil_conditional(self.x_0, -self.delta_x).astype(int)
         self.y_coords_history.append(self.y.copy())  # Initialize history with the first y value
         # Step 8: Determine F - front cells matrix

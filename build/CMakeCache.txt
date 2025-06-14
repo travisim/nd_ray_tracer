@@ -225,15 +225,6 @@ NDRayTracer_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 NDRayTracer_SOURCE_DIR:STATIC=/Users/k/Downloads/cody/nd_ray_tracer
 
-//Path to a file.
-PYTHON_INCLUDE_DIR:PATH=/Library/Frameworks/Python.framework/Versions/3.13/include/python3.13
-
-//Path to a library.
-PYTHON_LIBRARY:FILEPATH=/Library/Frameworks/Python.framework/Versions/3.13/lib/libpython3.13.dylib
-
-//Path to a library.
-PYTHON_LIBRARY_DEBUG:FILEPATH=PYTHON_LIBRARY_DEBUG-NOTFOUND
-
 
 ########################
 # INTERNAL cache entries
@@ -380,12 +371,4 @@ CMAKE_TAPI-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
-//Details about finding PythonLibs
-FIND_PACKAGE_MESSAGE_DETAILS_PythonLibs:INTERNAL=[/Library/Frameworks/Python.framework/Versions/3.13/lib/libpython3.13.dylib][/Library/Frameworks/Python.framework/Versions/3.13/include/python3.13][v3.13.2()]
-//ADVANCED property for variable: PYTHON_INCLUDE_DIR
-PYTHON_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_LIBRARY
-PYTHON_LIBRARY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_LIBRARY_DEBUG
-PYTHON_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 
