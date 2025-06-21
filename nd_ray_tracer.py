@@ -130,19 +130,7 @@ class NDRayTracer:
         else:
             return -1
     
-    def _calculate_single_f_vector(self) -> np.ndarray:
-        """
-        Calculates the F vector for the case where there is a single front cell.
-        f_{j,i} = 0 if δx_i >= 0 (ray going positive or zero, cell is at current grid position)
-        f_{j,i} = -1 if δx_i < 0 (ray going negative, cell is one step back)
-        """
-        f_vector = np.zeros(self.n, dtype=int)
-        for i in range(self.n):
-            if self.delta_x_sign[i] < 0:
-                f_vector[i] = -1
-            else:
-                f_vector[i] = 0
-        return f_vector
+
 
     def _determine_front_cells(self):
         """
@@ -208,6 +196,112 @@ class NDRayTracer:
         """
         return np.min(self.D) >= 1.0
     
+
+
+    def _calculate_search_space(self, all_front_cells: List[np.ndarray]) -> List[Tuple[int, ...]]:
+        """
+        Calculates a bounding box search space based on all front cells provided.
+        """
+        if not all_front_cells:
+            return []
+
+        all_cells = np.vstack(all_front_cells)
+        min_coords = np.min(all_cells, axis=0).astype(int)
+        max_coords = np.max(all_cells, axis=0).astype(int)
+        
+        # Create a grid of all integer coordinates within the bounding box
+        ranges = [range(min_c, max_c + 1) for min_c, max_c in zip(min_coords, max_coords)]
+        
+        return list(itertools.product(*ranges))
+
+    def _generate_loose_dimensions_offsets(self, source_cell: np.ndarray, target_cell: np.ndarray, loose_dimension: int) -> List[np.ndarray]:
+        """
+        Generates offsets from a source cell towards a target cell.
+        It creates offsets for all dimensional changes from 1 up to loose_dimension.
+        """
+
+             #loose dimension cannot be zero and must be less than or equal the number of dimensions
+        if loose_dimension <= 0 or loose_dimension > self.n:
+            raise ValueError("loose_dimension must be between 1 and the number of dimensions (inclusive)")
+        
+        diff = np.array(target_cell) - np.array(source_cell)
+        change_dims = [i for i, d in enumerate(diff) if d != 0]
+        
+        all_offsets = []
+        
+        for i in range(1, loose_dimension + 1):
+            if len(change_dims) < i:
+                break  # Cannot form combinations of size i
+
+            for dims_to_change in itertools.combinations(change_dims, i):
+                offset = np.zeros(self.n, dtype=int)
+                for dim in dims_to_change:
+                    offset[dim] = diff[dim]
+                all_offsets.append(offset)
+                
+        return all_offsets
+
+    def _dfs_path_exists(self, start_cell: tuple, end_cells: set, search_space: set, obstacle_set: set, loose_dimension: int) -> bool:
+        """
+        Performs a Depth-First Search to find a path from a start cell to any of the end cells.
+        Neighbors are generated using _generate_loose_dimensions_offsets, guiding the search towards the end cells.
+        """
+        if start_cell in obstacle_set:
+            return False
+            
+        stack = [start_cell]
+        visited = {start_cell}
+
+        while stack:
+            current_cell = stack.pop()
+
+            if current_cell in end_cells:
+                return True  # Path found
+
+            # Generate neighbors by trying to move towards each end cell
+            for end_cell in end_cells:
+                if current_cell == end_cell:
+                    continue
+
+                offsets = self._generate_loose_dimensions_offsets(np.array(current_cell), np.array(end_cell), loose_dimension)
+                for offset in offsets:
+                    neighbor = tuple(np.array(current_cell) + offset)
+
+                    if neighbor in search_space and neighbor not in visited:
+                        visited.add(neighbor)
+                        stack.append(neighbor)
+        
+        return False
+
+    def isHitObstacle(self, prev_coords: np.ndarray, prev_front_cells: List[np.ndarray], current_coords: np.ndarray, current_front_cells: List[np.ndarray], obstacles: Optional[List[np.ndarray]], loose_dimension: int = 0) -> bool:
+        if not obstacles:
+            return False
+        #if prev and current coordinates are the same, no obstacle hit
+        if np.array_equal(prev_coords, current_coords):
+            return False
+
+        obstacle_set = {tuple(obs) for obs in obstacles}
+        current_cell_coords = tuple(np.floor(current_coords + 1e-8).astype(int))
+
+        print("isObs", current_cell_coords)
+   
+
+        # The search space is the set of all valid cells (non-obstacles) in the bounding box
+        all_f_cells = prev_front_cells + current_front_cells
+        search_space = {cell for cell in self._calculate_search_space(all_f_cells) if cell not in obstacle_set}
+
+        _prev_front_cells = {tuple(c) for c in prev_front_cells}
+        _current_front_cells = {tuple(c) for c in current_front_cells}
+
+        # For each non-obstacle starting front cell, try to find a path to any of the target front cells
+        for start_cell in _prev_front_cells:
+            # If a path is found from this start cell, it means the obstacle is not blocking the way
+            if self._dfs_path_exists(start_cell, _current_front_cells, search_space, obstacle_set, loose_dimension):
+                return False  # A valid path was found, so no obstacle hit
+
+        # If no path was found from any of the previous front cells, then it's an obstacle hit
+        return True
+    
     def next(self) -> Dict[str, Any]:
         """
         Advances the ray to the next grid intersection and updates its state.
@@ -239,16 +333,7 @@ class NDRayTracer:
             "reached_goal": self.reached()
         }
 
-    def isHitObstacle(self, current_actual_coords: np.ndarray, obstacles: Optional[List[np.ndarray]]) -> bool:
-        if not obstacles:
-            return False
-        current_floored_coords = np.floor(current_actual_coords + 1e-8).astype(int)
-        for obs_coord in obstacles:
-            if np.array_equal(current_floored_coords, obs_coord):
-                return True
-        return False
-    
-    def traverse(self, x_0: np.ndarray, x_f: np.ndarray, obstacles: Optional[List[np.ndarray]] = None) -> Tuple[List[np.ndarray], List[List[np.ndarray]], List[np.ndarray], List[np.ndarray], bool, bool]:
+    def traverse(self, x_0: np.ndarray, x_f: np.ndarray, obstacles: Optional[List[np.ndarray]] = None, loose_dimension: int = 0) -> Tuple[List[np.ndarray], List[List[np.ndarray]], List[np.ndarray], List[np.ndarray], bool, bool]:
         """
         Complete traversal with corrected front cell tracking.
         Returns: (path_coordinates, front_cells_at_each_step, intersection_coordinates, y_coords_history, obstacle_hit, goal_reached)
@@ -269,7 +354,7 @@ class NDRayTracer:
         isGoalReached = False
         obstacle_hit = False
 
-        if self.isHitObstacle(self.x_0, obstacles):
+        if self.isHitObstacle(self.x_0, all_front_cells[-1], self.x_0, all_front_cells[-1], obstacles, loose_dimension=loose_dimension):
             obstacle_hit = True
             return path, all_front_cells, intersection_coords, self.y_coords_history, obstacle_hit, isGoalReached
 
@@ -286,9 +371,9 @@ class NDRayTracer:
             intersection_coords.append(new_coords)
             self.y_coords_history.append(self.y.copy())
             
-            if self.isHitObstacle(new_coords, obstacles):
+            if self.isHitObstacle(path[-2], all_front_cells[-1], new_coords, new_front_cells, obstacles, loose_dimension=loose_dimension):
                 obstacle_hit = True
-                all_front_cells.append(new_front_cells)
+                # all_front_cells.append(new_front_cells)
                 break
             
             all_front_cells.append(new_front_cells)
@@ -297,7 +382,7 @@ class NDRayTracer:
             if not path or not np.array_equal(path[-1], x_f):
                 path.append(x_f.copy())
             isGoalReached = True
-            if self.isHitObstacle(x_f, obstacles):
-                obstacle_hit = True
+            # if self.isHitObstacle(path[-2], all_front_cells[-1], x_f, all_front_cells[-1], obstacles, loose_dimension=loose_dimension):
+            #     obstacle_hit = True
 
         return path, all_front_cells, intersection_coords, self.y_coords_history, obstacle_hit, isGoalReached
