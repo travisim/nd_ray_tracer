@@ -103,7 +103,7 @@ if __name__ == "__main__":
       
 # {"dim": 3, "label": "1D Change (X-axis)", "x_0": np.array([0, 0, 0]), "x_f": np.array([0, 4, 4]), "obstacles": [np.array([-1, 1, 2]),np.array([0, 1, 2]),np.array([-1, 2, 1]),np.array([0, 2, 1])], "loose_dimension": 1},
 
-{"dim": 3, "label": "1D Change (X-axis)", "x_0": np.array([0, 0, 0]), "x_f": np.array([0, 6, 6]), "obstacles": [np.array([-1, 0, 0]),np.array([0, 1, 1]),np.array([-1, 2, 2])], "loose_dimension": 2},
+        {"dim": 3, "label": "Ray along Y-axis with obstacles", "x_0": np.array([2, 0, 3]), "x_f": np.array([2, 5, 3]), "obstacles": [np.array([1, 1, 3]), np.array([1, 2, 3]), np.array([1, 3, 3]), np.array([1, 4, 3]), np.array([2, 1, 2]), np.array([2, 2, 2]), np.array([2, 3, 2]), np.array([2, 4, 2]), np.array([2, 2, 3]),np.array([1, 3, 2])], "loose_dimension": 2},
 # {"dim": 3, "label": "1D Change (X-axis)", "x_0": np.array([0, 0, 0]), "x_f": np.array([0, 6, 6]), "obstacles": [np.array([-1, 0, 0]),np.array([-1, 1, 1]),np.array([-1, 2, 2])], "loose_dimension": 2},
 
 # {"dim": 3, "label": "1D Change (X-axis)", "x_0": np.array([0, 0, 0]), "x_f": np.array([0, 4, 4]), "obstacles": [np.array([-1, 1, 2]),np.array([0, 1, 2]),np.array([-1, 2, 1]),np.array([0, 2, 1])], "loose_dimension": 2},
